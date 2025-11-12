@@ -1,0 +1,99 @@
+package db
+
+import (
+	"context"
+	"errors"
+	"fmt"
+
+	"github.com/jackc/pgx/v5/pgxpool"
+)
+
+var Pool *pgxpool.Pool
+
+func InitDB(ctx context.Context, dbURL string) error {
+
+	Config, err := pgxpool.ParseConfig(dbURL)
+
+	if err != nil {
+		return errors.New("failed to parse database config")
+	}
+
+	Pool, err = pgxpool.NewWithConfig(ctx, Config)
+
+	if err != nil {
+		return errors.New("failed to create database connection pool")
+	}
+
+	err = Pool.Ping(ctx)
+
+	if err != nil {
+		return errors.New("failed to connect to database")
+	}
+
+	err = CreateTables(ctx)
+
+	if err != nil {
+		return errors.New("failed to create tables")
+	}
+
+	return nil
+}
+
+func GetDB() *pgxpool.Pool {
+	return Pool
+}
+
+func CreateTables(ctx context.Context) error {
+	var tableExists bool
+
+	err := Pool.QueryRow(ctx, `SELECT 
+	EXISTS(
+		SELECT FROM information_schema.tables
+		WHERE table_schema = 'public' AND
+		table_name = 'users'
+	)`).Scan(&tableExists)
+
+	if err != nil {
+		return err
+	}
+
+	if tableExists {
+		fmt.Println("Database already setup, skipping initialization")
+		return nil
+	}
+
+	exec, err := Pool.Begin(ctx)
+
+	if err != nil {
+		return errors.New("could not create tables")
+	}
+
+	commands := []string{
+		`CREATE TABLE users 
+		(
+			id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+			name TEXT NOT NULL,
+			email TEXT UNIQUE NOT NULL,
+			password TEXT NOT NULL,
+			hourly_rate DECIMAL(10,2) DEFAULT 0.0,
+			created_at TIMESTAMPTZ DEFAULT NOW(),
+			updated_at TIMESTAMPTZ DEFAULT NOW()
+		)`,
+	}
+
+	for index, cmd := range commands {
+		_, err := exec.Exec(ctx, cmd)
+
+		if err != nil {
+			return fmt.Errorf("error creating table at index %d", index)
+		}
+	}
+
+	err = exec.Commit(ctx)
+
+	if err != nil {
+		return errors.New("could not commit tables")
+	}
+
+	return nil
+}
