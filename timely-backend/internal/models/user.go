@@ -12,11 +12,11 @@ import (
 var ctx = context.Background()
 
 type User struct {
-	ID         string    `sjson:"id"`
-	Name       string    `json:"name" binding:"required"`
+	ID         string    `json:"id"`
+	Name       string    `json:"name"`
 	Email      string    `json:"email" binding:"required"`
-	Password   string    `json:"-" binding:"required"`
-	HourlyRate float64   `json:"hourly_rate" binding:"required"`
+	Password   string    `json:"password" binding:"required"`
+	HourlyRate float64   `json:"hourly_rate"`
 	CreatedAt  time.Time `json:"created_at"`
 	UpdatedAt  time.Time `json:"updated_at"`
 }
@@ -41,5 +41,21 @@ func (u *User) Save() error {
 }
 
 func (u *User) ValidateCredentials() error {
-	return errors.New("not implemented")
+	query := `SELECT id, password FROM users WHERE email=$1`
+
+	var retrivedHash string
+
+	err := db.GetDB().QueryRow(ctx, query, u.Email).Scan(&u.ID, &retrivedHash)
+
+	if err != nil {
+		return err
+	}
+
+	err = utils.CheckPasswordAndHash(u.Password, retrivedHash)
+
+	if err != nil {
+		return errors.New("invalid credentials")
+	}
+
+	return nil
 }

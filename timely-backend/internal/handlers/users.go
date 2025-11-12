@@ -44,6 +44,13 @@ func Login(ctx *gin.Context) {
 		return
 	}
 
+	err = u.ValidateCredentials()
+
+	if err != nil {
+		ctx.JSON(http.StatusUnauthorized, gin.H{"message": "invalid credentials"})
+		return
+	}
+
 	token, err := utils.GenerateToken(u.Email, u.ID)
 
 	if err != nil {
