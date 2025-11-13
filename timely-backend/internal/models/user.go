@@ -9,8 +9,6 @@ import (
 	"github.com/KoiralaSam/Timely/timely-backend/internal/utils"
 )
 
-var ctx = context.Background()
-
 type User struct {
 	ID         string    `json:"id"`
 	Name       string    `json:"name"`
@@ -31,7 +29,7 @@ func (u *User) Save() error {
 		return err
 	}
 
-	err = db.GetDB().QueryRow(ctx, query, u.Name, u.Email, hashedPassword, u.HourlyRate).Scan(&u.ID, &u.CreatedAt, &u.UpdatedAt)
+	err = db.GetDB().QueryRow(context.Background(), query, u.Name, u.Email, hashedPassword, u.HourlyRate).Scan(&u.ID, &u.CreatedAt, &u.UpdatedAt)
 
 	if err != nil {
 		return err
@@ -45,7 +43,7 @@ func (u *User) ValidateCredentials() error {
 
 	var retrivedHash string
 
-	err := db.GetDB().QueryRow(ctx, query, u.Email).Scan(&u.ID, &retrivedHash, &u.Name, &u.Email, &u.HourlyRate)
+	err := db.GetDB().QueryRow(context.Background(), query, u.Email).Scan(&u.ID, &retrivedHash, &u.Name, &u.Email, &u.HourlyRate)
 
 	if err != nil {
 		return err

@@ -13,6 +13,6 @@ func RegisterRoutes(server *gin.Engine) {
 
 	authenticated := server.Group("/api/v1")
 	authenticated.Use(middleware.AuthMiddleware)
-	authenticated.POST("/clock/in", handlers.ClockIn)
+	//authenticated.POST("/clock/in", handlers.ClockIn)
 
 }
