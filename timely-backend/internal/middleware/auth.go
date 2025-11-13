@@ -1,46 +1,31 @@
 package middleware
 
 import (
+	"net/http"
+
+	"github.com/KoiralaSam/Timely/timely-backend/internal/utils"
 	"github.com/gin-gonic/gin"
 )
 
-// // AuthMiddleware verifies JWT tokens for protected routes
-// func AuthMiddleware() gin.HandlerFunc {
-// 	return func(ctx *gin.Context) {
-// 		authHeader := ctx.GetHeader("Authorization")
-// 		if authHeader == "" {
-// 			ctx.JSON(http.StatusUnauthorized, gin.H{
-// 				"message": "Authorization header is required",
-// 			})
-// 			ctx.Abort()
-// 			return
-// 		}
+// AuthMiddleware verifies JWT tokens for protected routes
+func AuthMiddleware(ctx *gin.Context) {
+	token := ctx.Request.Header.Get("Authorization")
 
-// 		// Extract token from "Bearer <token>"
-// 		parts := strings.Split(authHeader, " ")
-// 		if len(parts) != 2 || parts[0] != "Bearer" {
-// 			ctx.JSON(http.StatusUnauthorized, gin.H{
-// 				"message": "Invalid authorization format. Expected: Bearer <token>",
-// 			})
-// 			ctx.Abort()
-// 			return
-// 		}
+	if token == "" {
+		ctx.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"message": "Authorization header is required"})
+		return
+	}
 
-// 		token := parts[1]
-// 		userID, err := utils.VerifyToken(token)
-// 		if err != nil {
-// 			ctx.JSON(http.StatusUnauthorized, gin.H{
-// 				"message": "Invalid token",
-// 				"error":   err.Error(),
-// 			})
-// 			ctx.Abort()
-// 			return
-// 		}
+	userId, err := utils.VerifyToken(token)
 
-// 		ctx.Set("userID", userID)
-// 		ctx.Next()
-// 	}
-// }
+	if err != nil {
+		ctx.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"message": "Invalid token"})
+		return
+	}
+	ctx.Set("userId", userId)
+	ctx.Next()
+
+}
 
 // CORSMiddleware handles CORS for the application
 func CORSMiddleware() gin.HandlerFunc {
