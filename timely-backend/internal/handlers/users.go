@@ -25,7 +25,25 @@ func Signup(ctx *gin.Context) {
 		return
 	}
 
-	ctx.JSON(http.StatusCreated, gin.H{"message": "Successfully created user"})
+	// Generate token for auto-login after signup
+	token, err := utils.GenerateToken(u.Email, u.ID)
+
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{"message": "could not generate token"})
+		return
+	}
+
+	// Return user data + token in a single response (not calling Login)
+	ctx.JSON(http.StatusCreated, gin.H{
+		"message": "Successfully created user",
+		"token":   token,
+		"user": gin.H{
+			"id":          u.ID,
+			"email":       u.Email,
+			"name":        u.Name,
+			"hourly_rate": u.HourlyRate,
+		},
+	})
 }
 
 func Login(ctx *gin.Context) {
@@ -58,6 +76,11 @@ func Login(ctx *gin.Context) {
 		return
 	}
 
-	ctx.JSON(http.StatusOK, gin.H{"message": "login successful", "token": token})
+	ctx.JSON(http.StatusOK, gin.H{"message": "login successful", "token": token, "user": gin.H{
+		"id":          u.ID,
+		"email":       u.Email,
+		"name":        u.Name,
+		"hourly_rate": u.HourlyRate,
+	}})
 
 }

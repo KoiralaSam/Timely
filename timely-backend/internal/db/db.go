@@ -75,7 +75,7 @@ func CreateTables(ctx context.Context) error {
 			name TEXT NOT NULL,
 			email TEXT UNIQUE NOT NULL,
 			password TEXT NOT NULL,
-			hourly_rate DECIMAL(10,2) DEFAULT 0.0,
+			hourly_rate DECIMAL(10,2) DEFAULT 0.0 NOT NULL,
 			created_at TIMESTAMPTZ DEFAULT NOW(),
 			updated_at TIMESTAMPTZ DEFAULT NOW()
 		)`,

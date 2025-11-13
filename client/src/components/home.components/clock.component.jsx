@@ -13,10 +13,9 @@ const Clock = () => {
   const formatTime = (date) => {
     return date.toLocaleTimeString();
   };
-  //text-4xl font-mono bg-gray-900 text-white px-6 py-2 rounded-lg shadow-md
   return (
-    <div className="h-20 flex items-center justify-center bg-gray-900 text-white">
-      <div className="text-4xl font-mono px-6 py-2 bg-gray-900 rounded-b-lg shadow-lg">
+    <div className="flex items-center justify-center">
+      <div className="text-3xl font-light text-gray-900 tracking-wide">
         {formatTime(time)}
       </div>
     </div>

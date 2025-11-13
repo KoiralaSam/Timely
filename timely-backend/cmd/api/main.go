@@ -6,6 +6,7 @@ import (
 	"os"
 
 	"github.com/KoiralaSam/Timely/timely-backend/internal/db"
+	"github.com/KoiralaSam/Timely/timely-backend/internal/middleware"
 	"github.com/KoiralaSam/Timely/timely-backend/internal/routes"
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
@@ -38,6 +39,8 @@ func main() {
 	defer db.GetDB().Close()
 
 	server := gin.Default()
+
+	server.Use(middleware.CORSMiddleware())
 	routes.RegisterRoutes(server)
 	server.Run(":8080") // localhost:8080
 }

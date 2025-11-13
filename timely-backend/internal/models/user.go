@@ -41,11 +41,11 @@ func (u *User) Save() error {
 }
 
 func (u *User) ValidateCredentials() error {
-	query := `SELECT id, password FROM users WHERE email=$1`
+	query := `SELECT id, password, name, email, hourly_rate FROM users WHERE email=$1`
 
 	var retrivedHash string
 
-	err := db.GetDB().QueryRow(ctx, query, u.Email).Scan(&u.ID, &retrivedHash)
+	err := db.GetDB().QueryRow(ctx, query, u.Email).Scan(&u.ID, &retrivedHash, &u.Name, &u.Email, &u.HourlyRate)
 
 	if err != nil {
 		return err

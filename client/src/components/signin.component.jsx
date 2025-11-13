@@ -21,7 +21,7 @@ const SignIn = () => {
     };
     console.log(data);
     axios({
-      url: "http://localhost:3000/user/login",
+      url: "http://localhost:8080/login",
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -29,9 +29,18 @@ const SignIn = () => {
       data: data,
     })
       .then((res) => {
-        dispatchUser({ type: "saveUser", payload: res.data });
-        console.log(res);
-        navigate("/home");
+        // res.data has structure: { message, token, user: { id, email, name, ... } }
+        dispatchUser({
+          type: "SET_USER",
+          payload: {
+            token: res.data.token,
+            user: res.data.user,
+          },
+        });
+        // Use setTimeout to ensure context updates before navigation
+        setTimeout(() => {
+          navigate("/home");
+        }, 100);
       })
       .catch((error) => {
         console.log(error.response?.data || error.message);
@@ -44,59 +53,57 @@ const SignIn = () => {
   return (
     <Fragment>
       <form
-        className="max-w-max p-6 rounded-2xl bg-white text-xl m-3 shadow-2xl"
+        className="w-full max-w-md p-8 bg-white text-gray-800"
         onSubmit={handleSubmit}
       >
-        <table className="w-full border-separate border-spacing-2">
-          <tbody>
-            <tr className="m-2">
-              <td className="pr-4">
-                <label htmlFor="email" className="font-medium">
-                  Email:
-                </label>
-              </td>
-              <td>
-                <input
-                  type="text"
-                  name="email"
-                  id="email"
-                  className="border border-gray-300 rounded-xl h-10 p-2 w-full"
-                />
-              </td>
-            </tr>
-            <tr className="m-2">
-              <td className="pr-4">
-                <label htmlFor="password" className="font-medium">
-                  Password:
-                </label>
-              </td>
-              <td className="relative">
-                <input
-                  type={visible ? "text" : "password"}
-                  name="password"
-                  id="password"
-                  required
-                  className="border border-gray-300 rounded-xl h-10 p-2 w-full pr-10"
-                />
+        <div className="space-y-6">
+          {/* Email Field */}
+          <div>
+            <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
+              Email Address
+            </label>
+            <input
+              type="email"
+              name="email"
+              id="email"
+              required
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 outline-none transition"
+              placeholder="you@example.com"
+            />
+          </div>
+
+          {/* Password Field */}
+          <div>
+            <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
+              Password
+            </label>
+            <div className="relative">
+              <input
+                type={visible ? "text" : "password"}
+                name="password"
+                id="password"
+                required
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 outline-none transition pr-10"
+                placeholder="••••••••"
+              />
+              <button
+                type="button"
+                onClick={handleVisibility}
+                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700 transition-colors"
+              >
                 {!visible ? (
-                  <FaEye
-                    onClick={handleVisibility}
-                    className="absolute right-2 top-1/2 transform -translate-y-1/2 cursor-pointer text-gray-500"
-                  />
+                  <FaEye size={18} />
                 ) : (
-                  <FaRegEyeSlash
-                    onClick={handleVisibility}
-                    className="absolute right-2 top-1/2 transform -translate-y-1/2 cursor-pointer text-gray-500"
-                  />
+                  <FaRegEyeSlash size={18} />
                 )}
-              </td>
-            </tr>
-          </tbody>
-        </table>
-        <div className="my-2">
+              </button>
+            </div>
+          </div>
+
+          {/* Submit Button */}
           <button
             type="submit"
-            className=" text-white border-1 rounded-xl bg-[#00AFF5] w-[160px] m-2 py-2 hover:bg-[#30C5FF]"
+            className="w-full bg-gray-900 text-white font-semibold py-3 px-4 rounded-lg hover:bg-gray-800 transition-all transform hover:scale-[1.02] mt-8"
           >
             Sign In
           </button>

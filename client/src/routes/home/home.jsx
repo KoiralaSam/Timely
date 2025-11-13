@@ -70,6 +70,7 @@ const Home = () => {
 
   const handleClockIn = async (type) => {
     const now = new Date();
+    const authToken = localStorage.getItem("authToken");
     if (type) {
       const newEntry = {
         clockIn: now,
@@ -77,7 +78,7 @@ const Home = () => {
         jobSite: "Superior Mart",
         payGrade: 10,
       };
-      const res = await saveClockEntry(newEntry, currentUser.token);
+      const res = await saveClockEntry(newEntry, authToken);
       setEntries([...entries, res]);
       setLoading(false);
     } else {
@@ -86,7 +87,7 @@ const Home = () => {
         ...oldEntry,
         clockOut: now, // ✅ override after spreading
       };
-      const res = await patchModEntry(modEntry, currentUser.token);
+      const res = await patchModEntry(modEntry, authToken);
       setEntries([...entries, res]);
       setLoading(false);
     }
@@ -94,12 +95,14 @@ const Home = () => {
 
   useEffect(() => {
     const fetchAndSetEntries = async () => {
-      if (!currentUser || !currentUser.token) {
+      // Check if user is authenticated by looking at currentUser and authToken in localStorage
+      const authToken = localStorage.getItem("authToken");
+      if (!currentUser || !authToken) {
         console.error("User is not authenticated. Redirecting to login.");
         navigate("/"); // Redirect to login if the user is not authenticated
         return;
       }
-      const data = await fetchEntries(currentUser.token);
+      const data = await fetchEntries(authToken);
       setEntries(data); // Set the fetched entries in state
       setLoading(false);
       if (data.length > 0) {
@@ -112,51 +115,51 @@ const Home = () => {
   }, [currentUser, navigate]); // Run when `currentUser` or `navigate` changes
 
   return (
-    <div className="bg-gray-50 w-full h-screen flex flex-col py-4 font-Inter">
-      <div className="flex flex-row justify-evenly">
+    <div className="bg-white w-full h-full flex flex-col py-8 px-8 font-Inter">
+      <div className="flex flex-row justify-center items-center gap-8 mb-8">
         <button
-          className="px-4 w-[120px] bg-slate-600 hover:bg-slate-700 text-white rounded-xl shadow-md transition duration-200"
+          className="px-6 py-2.5 bg-gray-900 hover:bg-gray-800 text-white rounded text-sm font-light tracking-wide transition-colors"
           onClick={() => {
             handleClockIn(type);
             setType(!type);
           }}
         >
-          {type ? "ClockIn" : "ClockOut"}
+          {type ? "Clock In" : "Clock Out"}
         </button>
         <Clock />
       </div>
 
-      <div className="m-5">
-        <div className="max-h-[800px] overflow-y-auto rounded-[12px] shadow-md">
-          <table className="min-w-full bg-white">
-            <thead className="bg-gray-800 text-white sticky top-0 z-10">
+      <div className="flex-1 overflow-auto">
+        <div className="border-t border-gray-200">
+          <table className="min-w-full">
+            <thead className="sticky top-0 z-10 bg-white border-b border-gray-200">
               <tr>
-                <th className="py-3 px-4 text-left">Clock In</th>
-                <th className="py-3 px-4 text-left">Clock Out</th>
-                <th className="py-3 px-4 text-left">Description</th>
-                <th className="py-3 px-4 text-left">Total Time</th>
+                <th className="py-3 px-4 text-left text-sm font-medium text-gray-700">Clock In</th>
+                <th className="py-3 px-4 text-left text-sm font-medium text-gray-700">Clock Out</th>
+                <th className="py-3 px-4 text-left text-sm font-medium text-gray-700">Description</th>
+                <th className="py-3 px-4 text-left text-sm font-medium text-gray-700">Total Time</th>
               </tr>
             </thead>
             {loading && (
               <tbody>
                 <tr>
-                  <td colSpan="4" className="text-center py-4">
+                  <td colSpan="4" className="text-center py-8 text-gray-500">
                     Loading...
                   </td>
                 </tr>
               </tbody>
             )}
             {!loading && (
-              <tbody className="hover:bg-[#f0f4ff]">
+              <tbody>
                 {(Array.isArray(entries) ? entries : [])
                   .slice()
                   .reverse()
                   .map((entry, index) => (
                     <tr
                       key={index}
-                      className="border-b even:bg-gray-100 hover:bg-indigo-50"
+                      className="border-b border-gray-100"
                     >
-                      <td className="py-2 px-4">
+                      <td className="py-3 px-4 text-sm text-gray-900">
                         {entry.clockIn
                           ? new Date(entry.clockIn).toLocaleTimeString([], {
                               hour: "2-digit",
@@ -164,7 +167,7 @@ const Home = () => {
                             })
                           : "-"}
                       </td>
-                      <td className="py-2 px-4">
+                      <td className="py-3 px-4 text-sm text-gray-900">
                         {entry.clockOut
                           ? new Date(entry.clockOut).toLocaleTimeString([], {
                               hour: "2-digit",
@@ -172,10 +175,10 @@ const Home = () => {
                             })
                           : "-"}
                       </td>
-                      <td className="py-2 px-4">
+                      <td className="py-3 px-4 text-sm text-gray-600">
                         {`${entry.status} at ${entry.jobSite}` || "-"}
                       </td>
-                      <td className="py-2 px-4">
+                      <td className="py-3 px-4 text-sm text-gray-900">
                         {typeof entry.hours === "number"
                           ? `${entry.hours.toFixed(2)} hrs`
                           : "-"}

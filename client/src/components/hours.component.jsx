@@ -17,9 +17,10 @@ const HoursChart = () => {
 
   const fetchData = async () => {
     try {
+      const authToken = localStorage.getItem("authToken");
       const res = await axios.get("http://localhost:3000/time", {
         headers: {
-          Authorization: `Bearer ${currentUser.token}`,
+          Authorization: `Bearer ${authToken}`,
         },
       });
 
