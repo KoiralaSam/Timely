@@ -1,5 +1,6 @@
 import { useContext, useEffect, useMemo, useState } from "react";
 import { UserContext } from "../../contexts/userContext";
+import { TimeContext } from "../../contexts/timeContext";
 import { useNavigate } from "react-router-dom";
 import Clock from "../../components/home.components/clock.component";
 import axios from "axios";
@@ -33,13 +34,28 @@ const formatDuration = (start, end) => {
 };
 
 const Home = () => {
-  const [sessions, setSessions] = useState([]);
-  const [activeSession, setActiveSession] = useState(null);
   const [loading, setLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState(null);
   const { currentUser, isInitialized } = useContext(UserContext);
+  const { sessions, activeSession, dispatchTime } = useContext(TimeContext);
   const navigate = useNavigate();
+
+  // Fetch sessions on mount
+  const fetchSessions = async (token) => {
+    try {
+      const res = await axios.get(`${API_BASE_URL}/clock/sessions`, {
+        headers: {
+          Authorization: `${token}`,
+        },
+      });
+      const apiSessions = res.data?.clockSessions || [];
+      const normalizedSessions = apiSessions.map(normalizeSession).filter(Boolean);
+      dispatchTime({ type: "SET_SESSIONS", payload: normalizedSessions });
+    } catch (error) {
+      console.error("Error fetching sessions:", error.response?.data || error.message);
+    }
+  };
 
   useEffect(() => {
     // Wait for context to finish initializing before checking auth
@@ -52,6 +68,9 @@ const Home = () => {
       navigate("/");
       return;
     }
+
+    // Fetch sessions when component mounts
+    fetchSessions(authToken);
     setLoading(false);
   }, [currentUser, isInitialized, navigate]);
 
@@ -98,20 +117,16 @@ const Home = () => {
       if (!activeSession) {
         const newSession = await saveClockEntry(authToken);
         if (newSession) {
-          setActiveSession(newSession);
-          setSessions((prev) => [...prev, newSession]);
+          dispatchTime({ type: "ADD_SESSION", payload: newSession });
         }
       } else {
         const updatedSession = await closeClockEntry(activeSession.id, authToken);
         if (updatedSession) {
-          setActiveSession(null);
-          setSessions((prev) =>
-            prev.map((session) =>
-              session.id === updatedSession.id ? updatedSession : session
-            )
-          );
+          dispatchTime({ type: "UPDATE_SESSION", payload: updatedSession });
         }
       }
+      // Refresh sessions to ensure we have the latest data
+      await fetchSessions(authToken);
     } catch (error) {
       // Extract error message from backend response
       const message = error.response?.data?.message || error.message || "An error occurred";
@@ -168,12 +183,9 @@ const Home = () => {
             )}
             {!loading && (
               <tbody>
-                {(Array.isArray(sessions) ? sessions : [])
-                  .slice()
-                  .reverse()
-                  .map((entry, index) => (
+                {(Array.isArray(sessions) ? sessions : []).map((entry) => (
                     <tr
-                      key={index}
+                      key={entry.id}
                       className="border-b border-gray-100"
                     >
                       <td className="py-3 px-4 text-sm text-gray-900">

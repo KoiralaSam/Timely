@@ -92,3 +92,40 @@ func GetSessionByID(id int64) (*ClockSession, error) {
 
 	return &c, nil
 }
+
+func GetClockSessionsByUserID(userId string) ([]ClockSession, error) {
+	query := `SELECT id, start_time, end_time, overtime_multiplier FROM clock_sessions WHERE user_id = $1 ORDER BY start_time DESC`
+
+	var clockSessions []ClockSession
+
+	result, err := db.GetDB().Query(context.Background(), query, userId)
+
+	if err != nil {
+		return nil, err
+	}
+
+	defer result.Close()
+
+	for result.Next() {
+		var c ClockSession
+		var endTime sql.NullTime
+
+		err = result.Scan(&c.ID, &c.StartTime, &endTime, &c.OvertimeMultiplier)
+
+		if err != nil {
+			return nil, err
+		}
+
+		if endTime.Valid {
+			c.EndTime = &endTime.Time
+		} else {
+			c.EndTime = nil
+		}
+
+		c.UserID = userId
+
+		clockSessions = append(clockSessions, c)
+	}
+
+	return clockSessions, nil
+}

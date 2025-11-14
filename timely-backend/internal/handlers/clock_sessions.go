@@ -72,3 +72,17 @@ func ClockOut(ctx *gin.Context) {
 	ctx.JSON(http.StatusCreated, gin.H{"message": "clock session updated successfully", "clockSession": session})
 
 }
+
+func GetClockSessions(ctx *gin.Context) {
+
+	userId := ctx.GetString("userId")
+
+	sessions, err := models.GetClockSessionsByUserID(userId)
+
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{"message": "could not get clock sessions"})
+		return
+	}
+
+	ctx.JSON(http.StatusOK, gin.H{"message": "clock sessions fetched successfully", "clockSessions": sessions})
+}
