@@ -41,13 +41,16 @@ func VerifyToken(token string) (string, error) {
 		return "", errors.New("invalid token")
 	}
 
-	claims, ok := parsedToken.Claims.(*jwt.MapClaims)
+	claims, ok := parsedToken.Claims.(jwt.MapClaims)
 
 	if !ok {
 		return "", errors.New("could not parse token claims")
 	}
 
-	userId := (*claims)["userId"].(string)
+	userId, ok := claims["userId"].(string)
+	if !ok {
+		return "", errors.New("could not extract userId from token")
+	}
 
 	return userId, nil
 }
