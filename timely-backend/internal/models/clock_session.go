@@ -3,6 +3,7 @@ package models
 import (
 	"context"
 	"database/sql"
+	"errors"
 	"time"
 
 	"github.com/KoiralaSam/Timely/timely-backend/internal/db"
@@ -50,6 +51,25 @@ func (c *ClockSession) EndSession() error {
 	}
 
 	c.EndTime = &endTime
+
+	return nil
+}
+
+func (c *ClockSession) CheckActiveSession() error {
+
+	query := `SELECT id FROM clock_sessions WHERE end_time IS NULL AND user_id = $1`
+
+	result, err := db.GetDB().Query(context.Background(), query, c.UserID)
+
+	if err != nil {
+		return err
+	}
+
+	defer result.Close()
+
+	if result.Next() {
+		return errors.New("active session already exists")
+	}
 
 	return nil
 }

@@ -37,17 +37,23 @@ const Home = () => {
   const [activeSession, setActiveSession] = useState(null);
   const [loading, setLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const { currentUser } = useContext(UserContext);
+  const [errorMessage, setErrorMessage] = useState(null);
+  const { currentUser, isInitialized } = useContext(UserContext);
   const navigate = useNavigate();
 
   useEffect(() => {
+    // Wait for context to finish initializing before checking auth
+    if (!isInitialized) {
+      return;
+    }
+
     const authToken = localStorage.getItem("authToken");
     if (!currentUser || !authToken) {
       navigate("/");
       return;
     }
     setLoading(false);
-  }, [currentUser, navigate]);
+  }, [currentUser, isInitialized, navigate]);
 
   const saveClockEntry = async (token) => {
     try {
@@ -86,6 +92,7 @@ const Home = () => {
     }
 
     setIsSubmitting(true);
+    setErrorMessage(null); // Clear previous errors
 
     try {
       if (!activeSession) {
@@ -105,6 +112,11 @@ const Home = () => {
           );
         }
       }
+    } catch (error) {
+      // Extract error message from backend response
+      const message = error.response?.data?.message || error.message || "An error occurred";
+      setErrorMessage(message);
+      console.error("Clock operation error:", error.response?.data || error.message);
     } finally {
       setIsSubmitting(false); 
     }
@@ -118,13 +130,20 @@ const Home = () => {
   return (
     <div className="bg-white w-full h-full flex flex-col py-8 px-8 font-Inter">
       <div className="flex flex-row justify-center items-center gap-8 mb-8">
-        <button
-          className="px-6 py-2.5 bg-gray-900 hover:bg-gray-800 text-white rounded text-sm font-light tracking-wide transition-colors disabled:opacity-60"
-          onClick={handleClockToggle}
-          disabled={isSubmitting || loading}
-        >
-          {buttonLabel}
-        </button>
+        <div className="flex flex-col items-center gap-2">
+          <button
+            className="px-6 py-2.5 bg-gray-900 hover:bg-gray-800 text-white rounded text-sm font-light tracking-wide transition-colors disabled:opacity-60"
+            onClick={handleClockToggle}
+            disabled={isSubmitting || loading}
+          >
+            {buttonLabel}
+          </button>
+          {errorMessage && (
+            <p className="text-sm text-red-600 text-center max-w-xs">
+              {errorMessage}
+            </p>
+          )}
+        </div>
         <Clock />
       </div>
 

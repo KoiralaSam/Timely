@@ -21,7 +21,14 @@ func ClockIn(ctx *gin.Context) {
 		return
 	}
 
-	err := clockSession.Save()
+	err := clockSession.CheckActiveSession()
+
+	if err != nil {
+		ctx.JSON(http.StatusConflict, gin.H{"message": "Active session already exists"})
+		return
+	}
+
+	err = clockSession.Save()
 
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"message": "could not save clock session", "error": err.Error()})

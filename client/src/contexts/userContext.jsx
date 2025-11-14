@@ -3,9 +3,10 @@ import { createContext, useEffect, useReducer } from "react";
 export const UserContext = createContext({
   currentUser: null,
   dispatchUser: () => {},
+  isInitialized: false,
 });
 
-const reducer = (currentUser, action) => {
+const reducer = (state, action) => {
   switch (action.type) {
     case "SET_USER":
       // Set user after login or signup
@@ -21,27 +22,33 @@ const reducer = (currentUser, action) => {
       // Store token separately and user data in localStorage
       localStorage.setItem("authToken", action.payload.token);
       localStorage.setItem("user", JSON.stringify(userData));
-      return userData;
+      return { ...state, currentUser: userData, isInitialized: true };
 
     case "LOGOUT_USER":
       // Clear user data from state and localStorage
       localStorage.removeItem("authToken");
       localStorage.removeItem("user");
-      return null;
+      return { ...state, currentUser: null, isInitialized: true };
 
     case "RESTORE_USER":
       // Restore user from localStorage (on app load)
       // User data is stored without token
-      return action.payload;
+      return { ...state, currentUser: action.payload, isInitialized: true };
+
+    case "INITIALIZE":
+      return { ...state, isInitialized: true };
 
     default:
-      return currentUser;
+      return state;
   }
 };
 
 export const UserProvider = ({ children }) => {
-  // Initial state is null (no user logged in)
-  const [currentUser, dispatchUser] = useReducer(reducer, null);
+  // Initial state with isInitialized flag
+  const [state, dispatchUser] = useReducer(reducer, {
+    currentUser: null,
+    isInitialized: false,
+  });
 
   // On component mount, try to restore user from localStorage
   useEffect(() => {
@@ -61,11 +68,19 @@ export const UserProvider = ({ children }) => {
         // Clean up invalid data
         localStorage.removeItem("authToken");
         localStorage.removeItem("user");
+        dispatchUser({ type: "INITIALIZE" });
       }
+    } else {
+      // No user data found, mark as initialized
+      dispatchUser({ type: "INITIALIZE" });
     }
   }, []);
 
-  const value = { currentUser, dispatchUser };
+  const value = {
+    currentUser: state.currentUser,
+    dispatchUser,
+    isInitialized: state.isInitialized,
+  };
   return (
     <UserContext.Provider value={value}>{children}</UserContext.Provider>
   );
