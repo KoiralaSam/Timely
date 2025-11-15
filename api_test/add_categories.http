@@ -1,0 +1,71 @@
+### Grocery
+POST http://localhost:8080/expense/categories
+Content-Type: application/json
+
+{
+    "name": "Grocery",
+    "color": "#4CAF50"
+}
+
+### Food
+POST http://localhost:8080/expense/categories
+Content-Type: application/json
+
+{
+    "name": "Food",
+    "color": "#FF5733"
+}
+
+### Shopping
+POST http://localhost:8080/expense/categories
+Content-Type: application/json
+
+{
+    "name": "Shopping",
+    "color": "#9C27B0"
+}
+
+### Education
+POST http://localhost:8080/expense/categories
+Content-Type: application/json
+
+{
+    "name": "Education",
+    "color": "#2196F3"
+}
+
+### Health
+POST http://localhost:8080/expense/categories
+Content-Type: application/json
+
+{
+    "name": "Health",
+    "color": "#F44336"
+}
+
+### Entertainment
+POST http://localhost:8080/expense/categories
+Content-Type: application/json
+
+{
+    "name": "Entertainment",
+    "color": "#9C27B0"
+}
+
+### Transportation
+POST http://localhost:8080/expense/categories
+Content-Type: application/json
+
+{
+    "name": "Transportation",
+    "color": "#2196F3"
+}
+
+### Other
+POST http://localhost:8080/expense/categories
+Content-Type: application/json
+
+{
+    "name": "Other",
+    "color": "#607D8B"
+}

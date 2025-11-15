@@ -10,6 +10,7 @@ import (
 func RegisterRoutes(server *gin.Engine) {
 	server.POST("/login", handlers.Login)
 	server.POST("/signup", handlers.Signup)
+	server.POST("/expense/categories", handlers.CreateExpenseCategory)
 
 	authenticated := server.Group("/api/v1")
 	authenticated.Use(middleware.AuthMiddleware)
