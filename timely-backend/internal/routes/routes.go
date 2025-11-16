@@ -18,5 +18,6 @@ func RegisterRoutes(server *gin.Engine) {
 	authenticated.POST("/clock/out/:id", handlers.ClockOut)
 	authenticated.GET("/clock/sessions", handlers.GetClockSessions)
 	authenticated.POST("/expense/add", handlers.CreateExpense)
+	authenticated.GET("/expense/list", handlers.GetExpenses)
 
 }

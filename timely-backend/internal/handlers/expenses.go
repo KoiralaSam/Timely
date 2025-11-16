@@ -13,7 +13,7 @@ func CreateExpense(ctx *gin.Context) {
 	err := ctx.ShouldBindJSON(&expense)
 
 	if err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"message": "could not parse request data"})
+		ctx.JSON(http.StatusBadRequest, gin.H{"message": "could not parse request data", "error": err.Error()})
 		return
 	}
 
@@ -32,4 +32,17 @@ func CreateExpense(ctx *gin.Context) {
 	}
 
 	ctx.JSON(http.StatusCreated, gin.H{"message": "expense saved successfully", "expense": expense})
+}
+
+func GetExpenses(ctx *gin.Context) {
+	userId := ctx.GetString("userId")
+
+	expenses, err := models.GetExpensesByUserID(userId)
+
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{"message": "could not get expenses", "error": err.Error()})
+		return
+	}
+
+	ctx.JSON(http.StatusOK, gin.H{"message": "expenses fetched successfully", "expenses": expenses})
 }
