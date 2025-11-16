@@ -3,8 +3,8 @@ import { RiLogoutBoxLine } from "react-icons/ri";
 import { HiOutlineUser } from "react-icons/hi";
 import { HiOutlineCog6Tooth } from "react-icons/hi2";
 import { HiOutlineClock } from "react-icons/hi";
-import { HiOutlineChartBar } from "react-icons/hi";
-import { HiOutlineCurrencyDollar } from "react-icons/hi";
+import { HiOutlineWallet } from "react-icons/hi2";
+import { HiOutlineFlag } from "react-icons/hi";
 import { useNavigate } from "react-router-dom";
 import { useContext } from "react";
 import { UserContext } from "../../contexts/userContext";
@@ -31,11 +31,11 @@ export default function Navigation() {
           <nav className="flex items-center gap-1">
             <NavItem to="/home" icon={<HiOutlineClock size={18} />} label="Clock" />
             <NavItem
-              to="/hours"
-              icon={<HiOutlineChartBar size={18} />}
-              label="Hours"
+              to="/finances"
+              icon={<HiOutlineWallet size={18} />}
+              label="Finances"
             />
-            <NavItem to="/salary" icon={<HiOutlineCurrencyDollar size={18} />} label="Salary" />
+            <NavItem to="/goals" icon={<HiOutlineFlag size={18} />} label="Goals" />
             <NavItem
               to="/profile"
               icon={<HiOutlineUser size={18} />}

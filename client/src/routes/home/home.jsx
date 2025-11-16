@@ -142,6 +142,23 @@ const Home = () => {
     [activeSession]
   );
 
+  // Calculate total hours from all completed sessions
+  const totalHours = useMemo(() => {
+    const completedSessions = (Array.isArray(sessions) ? sessions : []).filter(
+      (session) => session.startTime && session.endTime
+    );
+
+    const totalMs = completedSessions.reduce((sum, session) => {
+      const start = new Date(session.startTime);
+      const end = new Date(session.endTime);
+      const diffMs = end - start;
+      return sum + (diffMs > 0 ? diffMs : 0);
+    }, 0);
+
+    const totalHours = totalMs / (1000 * 60 * 60);
+    return totalHours.toFixed(2);
+  }, [sessions]);
+
   return (
     <div className="bg-white w-full h-full flex flex-col py-8 px-8 font-Inter">
       <div className="flex flex-row justify-center items-center gap-8 mb-8">
@@ -202,6 +219,14 @@ const Home = () => {
               </tbody>
             )}
           </table>
+        </div>
+      </div>
+
+      {/* Total Hours Display */}
+      <div className="border-t border-gray-200 pt-4 mt-4">
+        <div className="flex justify-between items-center px-4">
+          <span className="text-sm font-medium text-gray-700">Total Hours</span>
+          <span className="text-lg font-light text-gray-900">{totalHours} hrs</span>
         </div>
       </div>
     </div>
