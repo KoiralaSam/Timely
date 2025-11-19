@@ -2,8 +2,9 @@ import React, { useEffect, useState } from "react";
 import { usePlaidLink } from "react-plaid-link";
 import { FiCreditCard, FiShield, FiCheck, FiLoader } from "react-icons/fi";
 import axios from "axios";
+import { API_BASE_URL } from "../../../config/api";
 
-const API_BASE_URL = "http://localhost:8080/api/v1";
+const API_BASE_URL_V1 = `${API_BASE_URL}/api/v1`;
 
 const Banks = () => {
   const [linkToken, setLinkToken] = useState(null);
@@ -20,7 +21,7 @@ const Banks = () => {
     }
 
     try {
-      const response = await fetch(`${API_BASE_URL}/plaid/link-token`, {
+      const response = await fetch(`${API_BASE_URL_V1}/plaid/link-token`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -58,7 +59,7 @@ const Banks = () => {
       try {
         const authToken = localStorage.getItem("authToken");
         const response = await axios.post(
-          `${API_BASE_URL}/plaid/exchange-token`,
+          `${API_BASE_URL_V1}/plaid/exchange-token`,
           {
             public_token,
             institution_id: metadata?.institution?.institution_id,

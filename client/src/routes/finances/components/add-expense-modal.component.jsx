@@ -1,7 +1,8 @@
 import { FiUpload, FiX } from "react-icons/fi";
 import axios from "axios";
+import { API_BASE_URL } from "../../../config/api";
 
-const API_BASE_URL = "http://localhost:8080/api/v1";
+const API_BASE_URL_V1 = `${API_BASE_URL}/api/v1`;
 
 // Dummy categories for now
 const expenseCategories = [
@@ -48,7 +49,7 @@ const AddExpenseModal = ({
       };
 
       const response = await axios.post(
-        `${API_BASE_URL}/expense/add`,
+        `${API_BASE_URL_V1}/expense/add`,
         expensePayload,
         {
           headers: {

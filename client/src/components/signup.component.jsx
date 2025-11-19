@@ -3,6 +3,7 @@ import { UserContext } from "../contexts/userContext";
 import { useNavigate } from "react-router-dom";
 import { FaRegEyeSlash, FaEye } from "react-icons/fa";
 import axios from "axios";
+import { API_BASE_URL } from "../config/api";
 
 const SignUp = () => {
   const [visible, setVisible] = useState(false);
@@ -18,7 +19,7 @@ const SignUp = () => {
       hourly_rate: parseFloat(event.target.hourly_rate.value),
     };
     axios({
-      url: "http://localhost:8080/signup",
+      url: `${API_BASE_URL}/signup`,
       method: "POST",
       headers: {
         "Content-Type": "application/json",

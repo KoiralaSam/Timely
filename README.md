@@ -1,98 +1,92 @@
 # Timely
 
-Timely is a minimalist time-tracking application built with a **React + Vite** frontend and a **Go (Gin) + PostgreSQL** backend. It allows authenticated users to clock in, clock out, and view their recent sessions with accurate durations.
+A time-tracking and expense management app with **React + Vite** frontend and **Go (Gin) + PostgreSQL** backend. Features JWT authentication, clock in/out sessions, expense tracking with categories, and Plaid bank integration.
 
 ## Features
-- **Authentication** with JWT (login + signup)
-- **Clock In / Clock Out** workflow backed by a Postgres database
-- **Session table** that shows start time, end time, and total duration
-- **Responsive UI** using Tailwind-inspired styling
+
+- **Time Tracking**: Clock in/out with session history and duration calculations
+- **Expense Management**: Add, view, delete expenses with categories (Grocery, Food, Shopping, Education, Health, Entertainment, Transportation, Other)
+- **Expense Dashboard**: Pie charts (by category) and bar charts (monthly spending)
+- **Bank Integration**: Secure bank account linking via Plaid Link
+- **Authentication**: JWT-based login/signup with protected routes
 
 ## Tech Stack
-| Layer      | Tools |
-| ---------- | ----- |
-| Frontend   | React 19, Vite, React Router, Axios, Tailwind styles |
-| Backend    | Go 1.25, Gin, PostgreSQL, pgx pool |
-| Auth       | JWT (HS256), custom middleware |
 
-## Project structure
-```
-Timely/
-├── client/                 # React app
-│   └── src/
-│       ├── routes/         # landing, auth, home
-│       ├── components/     # signin, signup, clock component
-│       └── contexts/       # user context
-├── timely-backend/         # Go server
-│   ├── cmd/api/main.go     # server bootstrap
-│   ├── internal/
-│   │   ├── db/             # connection + migrations
-│   │   ├── handlers/       # login, signup, clock endpoints
-│   │   ├── middleware/     # CORS + auth
-│   │   ├── models/         # user + clock session models
-│   │   └── utils/          # hashing + JWT helpers
-└── api_test/               # HTTP request samples for testing
-```
+**Frontend**: React 19, Vite, React Router, Axios, Tailwind CSS, Recharts, React Plaid Link  
+**Backend**: Go 1.25, Gin, PostgreSQL, pgx pool  
+**Auth**: JWT (HS256), custom middleware  
+**Integrations**: Plaid API (sandbox)
 
-## Getting started
+## Getting Started
 
 ### Prerequisites
-- Go 1.25+
-- Node.js 20+ and npm
-- PostgreSQL 14+ (with the `pgcrypto` extension for `gen_random_uuid`)
-- `.env` file at project root with:
-  ```
-  DATABASE_URL=postgres://user:password@localhost:5432/timely?sslmode=disable
-  SECRET_KEY=your_jwt_secret
-  ```
+- Go 1.25+, Node.js 20+, PostgreSQL 14+ (with `pgcrypto`), Plaid account
+
+### Environment Variables (`.env` at root)
+```env
+DATABASE_URL=postgres://user:password@localhost:5432/timely?sslmode=disable
+SECRET_KEY=your_jwt_secret
+PLAID_CLIENT_ID=your_plaid_client_id
+PLAID_SECRET=your_plaid_secret
+PLAID_REDIRECT_URI=http://localhost:5173/finances/callback
+```
 
 ### Backend
 ```bash
-cd timely-backend
-go mod download
-go run ./cmd/api
+cd timely-backend && go mod download && go run ./cmd/api
 ```
-The server listens on `http://localhost:8080`. On first run it creates the `users` and `clock_sessions` tables if they do not exist.
+Server: `http://localhost:8080` (creates tables on first run)
 
 ### Frontend
 ```bash
-cd client
-npm install
-npm run dev
+cd client && npm install && npm run dev
 ```
-The Vite dev server defaults to `http://localhost:5173`.
+Dev server: `http://localhost:5173`
 
-## Key API endpoints
-| Method | Endpoint                    | Description                        |
-| ------ | --------------------------- | ---------------------------------- |
-| POST   | `/signup`                   | Create a new account, returns JWT  |
-| POST   | `/login`                    | Authenticate, returns JWT          |
-| POST   | `/api/v1/clock/in`          | Start a clock session              |
-| POST   | `/api/v1/clock/out/:id`     | Close a clock session              |
+## API Endpoints
 
-Headers for protected routes:
+**Auth**: `POST /signup`, `POST /login`  
+**Time**: `POST /api/v1/clock/in`, `POST /api/v1/clock/out/:id`, `GET /api/v1/clock/sessions`  
+**Expenses**: `POST /expense/categories`, `POST /api/v1/expense/add`, `GET /api/v1/expense/list`, `DELETE /api/v1/expense/:id`  
+**Plaid**: `POST /api/v1/plaid/link-token`, `POST /api/v1/plaid/exchange-token`
+
+**Protected routes header**: `Authorization: <token>` (no "Bearer " prefix)
+
+## Project Structure
+
 ```
-Authorization: Bearer <token>
+Timely/
+├── client/src/routes/finances/     # Dashboard, Recent Activity, Banks, Add Expense
+├── timely-backend/internal/
+│   ├── handlers/                   # API handlers
+│   ├── models/                     # User, ClockSession, Expense, PlaidItem
+│   ├── routes/                     # Route definitions
+│   └── middleware/                 # Auth + CORS
+└── api_test/                       # HTTP test files
 ```
 
-## Frontend integration notes
-- On login/signup, store `authToken` (JWT) in `localStorage`.
-- `home.jsx` uses `/api/v1/clock/in` and `/api/v1/clock/out/:id` to toggle active sessions.
-- Session list displays start/end timestamps and total duration; it does not rely on any unimplemented endpoints.
+## Database Tables
 
-## Testing APIs quickly
-Use the `api_test/*.http` files with VS Code REST client or IntelliJ HTTP client:
-- `create-user.http` – register a user
-- `login-user.http` – fetch a token
-- `clockin.http` – start a session
-- `clockout.http` – end a session
+- `users`: id, email, name, password_hash, hourly_rate
+- `clock_sessions`: id, user_id, start_time, end_time
+- `expense_categories`: id, name, color
+- `expenses`: id, user_id, category_id, amount, description, date
+- `plaid_items`: id, user_id, access_token, item_id, institution_name, institution_id
 
-## Future enhancements
-- Session history endpoint (GET)
-- Pay calculations based on hourly rate
-- Multi-tenant/team support
-- Better error reporting and toast notifications in the UI
+## Frontend Features
 
----
-Feel free to fork and customize Timely for your own time-tracking needs!
+**Finances Section**:
+- Dashboard with expense charts
+- Recent Activity with category colors and delete
+- Banks: Plaid Link integration
+- Add Expense modal with category, amount, description, date, receipt upload
 
+**State Management**: UserContext, ExpenseContext, TimeContext
+
+## Testing
+
+Use `api_test/*.http` files with VS Code REST client or IntelliJ HTTP client.
+
+## Future Enhancements
+
+Bank transaction fetching, auto-categorization, periodic sync, account management, export reports, pay calculations.

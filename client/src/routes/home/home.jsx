@@ -4,8 +4,9 @@ import { TimeContext } from "../../contexts/timeContext";
 import { useNavigate } from "react-router-dom";
 import Clock from "../../components/home.components/clock.component";
 import axios from "axios";
+import { API_BASE_URL } from "../../config/api";
 
-const API_BASE_URL = "http://localhost:8080/api/v1";
+const API_BASE_URL_V1 = `${API_BASE_URL}/api/v1`;
 
 const normalizeSession = (apiSession) => {
   if (!apiSession) return null;
@@ -44,16 +45,21 @@ const Home = () => {
   // Fetch sessions on mount
   const fetchSessions = async (token) => {
     try {
-      const res = await axios.get(`${API_BASE_URL}/clock/sessions`, {
+      const res = await axios.get(`${API_BASE_URL_V1}/clock/sessions`, {
         headers: {
           Authorization: `${token}`,
         },
       });
       const apiSessions = res.data?.clockSessions || [];
-      const normalizedSessions = apiSessions.map(normalizeSession).filter(Boolean);
+      const normalizedSessions = apiSessions
+        .map(normalizeSession)
+        .filter(Boolean);
       dispatchTime({ type: "SET_SESSIONS", payload: normalizedSessions });
     } catch (error) {
-      console.error("Error fetching sessions:", error.response?.data || error.message);
+      console.error(
+        "Error fetching sessions:",
+        error.response?.data || error.message
+      );
     }
   };
 
@@ -76,7 +82,7 @@ const Home = () => {
 
   const saveClockEntry = async (token) => {
     try {
-      const res = await axios.post(`${API_BASE_URL}/clock/in`, null, {
+      const res = await axios.post(`${API_BASE_URL_V1}/clock/in`, null, {
         headers: {
           Authorization: `${token}`,
         },
@@ -90,11 +96,15 @@ const Home = () => {
 
   const closeClockEntry = async (sessionId, token) => {
     try {
-      const res = await axios.post(`${API_BASE_URL}/clock/out/${sessionId}`, null, {
-        headers: {
-          Authorization: `${token}`,
-        },
-      });
+      const res = await axios.post(
+        `${API_BASE_URL_V1}/clock/out/${sessionId}`,
+        null,
+        {
+          headers: {
+            Authorization: `${token}`,
+          },
+        }
+      );
       return normalizeSession(res.data?.clockSession);
     } catch (error) {
       console.error(error.response?.data || error.message);
@@ -120,7 +130,10 @@ const Home = () => {
           dispatchTime({ type: "ADD_SESSION", payload: newSession });
         }
       } else {
-        const updatedSession = await closeClockEntry(activeSession.id, authToken);
+        const updatedSession = await closeClockEntry(
+          activeSession.id,
+          authToken
+        );
         if (updatedSession) {
           dispatchTime({ type: "UPDATE_SESSION", payload: updatedSession });
         }
@@ -129,11 +142,15 @@ const Home = () => {
       await fetchSessions(authToken);
     } catch (error) {
       // Extract error message from backend response
-      const message = error.response?.data?.message || error.message || "An error occurred";
+      const message =
+        error.response?.data?.message || error.message || "An error occurred";
       setErrorMessage(message);
-      console.error("Clock operation error:", error.response?.data || error.message);
+      console.error(
+        "Clock operation error:",
+        error.response?.data || error.message
+      );
     } finally {
-      setIsSubmitting(false); 
+      setIsSubmitting(false);
     }
   };
 
@@ -184,9 +201,15 @@ const Home = () => {
           <table className="min-w-full">
             <thead className="sticky top-0 z-10 bg-white border-b border-gray-200">
               <tr>
-                <th className="py-3 px-4 text-left text-sm font-medium text-gray-700">Clock In</th>
-                <th className="py-3 px-4 text-left text-sm font-medium text-gray-700">Clock Out</th>
-                <th className="py-3 px-4 text-left text-sm font-medium text-gray-700">Duration</th>
+                <th className="py-3 px-4 text-left text-sm font-medium text-gray-700">
+                  Clock In
+                </th>
+                <th className="py-3 px-4 text-left text-sm font-medium text-gray-700">
+                  Clock Out
+                </th>
+                <th className="py-3 px-4 text-left text-sm font-medium text-gray-700">
+                  Duration
+                </th>
               </tr>
             </thead>
             {loading && (
@@ -201,21 +224,18 @@ const Home = () => {
             {!loading && (
               <tbody>
                 {(Array.isArray(sessions) ? sessions : []).map((entry) => (
-                    <tr
-                      key={entry.id}
-                      className="border-b border-gray-100"
-                    >
-                      <td className="py-3 px-4 text-sm text-gray-900">
-                        {formatTime(entry.startTime)}
-                      </td>
-                      <td className="py-3 px-4 text-sm text-gray-900">
-                        {formatTime(entry.endTime)}
-                      </td>
-                      <td className="py-3 px-4 text-sm text-gray-900">
-                        {formatDuration(entry.startTime, entry.endTime)}
-                      </td>
-                    </tr>
-                  ))}
+                  <tr key={entry.id} className="border-b border-gray-100">
+                    <td className="py-3 px-4 text-sm text-gray-900">
+                      {formatTime(entry.startTime)}
+                    </td>
+                    <td className="py-3 px-4 text-sm text-gray-900">
+                      {formatTime(entry.endTime)}
+                    </td>
+                    <td className="py-3 px-4 text-sm text-gray-900">
+                      {formatDuration(entry.startTime, entry.endTime)}
+                    </td>
+                  </tr>
+                ))}
               </tbody>
             )}
           </table>
@@ -226,7 +246,9 @@ const Home = () => {
       <div className="border-t border-gray-200 pt-4 mt-4">
         <div className="flex justify-between items-center px-4">
           <span className="text-sm font-medium text-gray-700">Total Hours</span>
-          <span className="text-lg font-light text-gray-900">{totalHours} hrs</span>
+          <span className="text-lg font-light text-gray-900">
+            {totalHours} hrs
+          </span>
         </div>
       </div>
     </div>

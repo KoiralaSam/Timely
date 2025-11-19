@@ -2,8 +2,9 @@ import { useContext } from "react";
 import { FiTrash2 } from "react-icons/fi";
 import axios from "axios";
 import { ExpenseContext } from "../../../contexts/expenseContext";
+import { API_BASE_URL } from "../../../config/api";
 
-const API_BASE_URL = "http://localhost:8080/api/v1";
+const API_BASE_URL_V1 = `${API_BASE_URL}/api/v1`;
 
 const formatDate = (dateString) => {
   if (!dateString) return "-";
@@ -27,7 +28,7 @@ const RecentActivity = () => {
         return;
       }
 
-      const res = await axios.delete(`${API_BASE_URL}/expense/${id}`, {
+      const res = await axios.delete(`${API_BASE_URL_V1}/expense/${id}`, {
         headers: {
           Authorization: authToken,
         },

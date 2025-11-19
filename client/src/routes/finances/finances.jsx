@@ -3,12 +3,13 @@ import { useSearchParams } from "react-router-dom";
 import { FiLayout, FiActivity, FiCreditCard } from "react-icons/fi";
 import axios from "axios";
 import { ExpenseContext } from "../../contexts/expenseContext";
+import { API_BASE_URL } from "../../config/api";
 import Dashboard from "./components/dashboard.component";
 import RecentActivity from "./components/recent-activity.component";
 import Banks from "./components/banks.component";
 import AddExpenseModal from "./components/add-expense-modal.component";
 
-const API_BASE_URL = "http://localhost:8080/api/v1";
+const API_BASE_URL_V1 = `${API_BASE_URL}/api/v1`;
 
 const Finances = () => {
   const { expenses, dispatchExpense } = useContext(ExpenseContext);
@@ -38,7 +39,7 @@ const Finances = () => {
   const fetchExpenses = useCallback(
     async (token) => {
       try {
-        const res = await axios.get(`${API_BASE_URL}/expense/list`, {
+        const res = await axios.get(`${API_BASE_URL_V1}/expense/list`, {
           headers: {
             Authorization: token,
           },

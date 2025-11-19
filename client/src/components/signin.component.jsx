@@ -5,8 +5,8 @@ import { UserContext } from "../contexts/userContext";
 import { useNavigate } from "react-router-dom";
 import { FaRegEyeSlash } from "react-icons/fa";
 import { FaEye } from "react-icons/fa";
-
 import axios from "axios";
+import { API_BASE_URL } from "../config/api";
 
 const SignIn = () => {
   const [visible, setVisible] = useState(false);
@@ -21,7 +21,7 @@ const SignIn = () => {
     };
     console.log(data);
     axios({
-      url: "http://localhost:8080/login",
+      url: `${API_BASE_URL}/login`,
       method: "POST",
       headers: {
         "Content-Type": "application/json",
