@@ -37,6 +37,16 @@ const reducer = (state, action) => {
         ...state,
         expenses: updatedExpenses,
       };
+
+    case "DELETE_EXPENSE":
+      const filteredExpenses = state.expenses.filter(
+        (e) => e.id !== action.payload.id
+      );
+
+      return {
+        ...state,
+        expenses: filteredExpenses,
+      };
     default:
       return state;
   }

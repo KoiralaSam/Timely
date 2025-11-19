@@ -87,3 +87,31 @@ func GetExpensesByUserID(userId string) ([]ExpenseWithCategory, error) {
 
 	return expenses, nil
 }
+
+func GetExpensesByID(id int64) (*Expense, error) {
+	query := `SELECT * FROM expenses WHERE id = $1`
+
+	var e Expense
+
+	err := db.GetDB().QueryRow(context.Background(), query, id).Scan(&e.ID, &e.UserID, &e.CategoryID, &e.Amount, &e.Description, &e.Date, &e.CreatedAt, &e.UpdatedAt)
+
+	if err != nil {
+		return nil, err
+	}
+
+	e.Date = normalizeDate(e.Date)
+
+	return &e, nil
+}
+
+func (e *Expense) Delete() error {
+	query := `DELETE from expenses WHERE id = $1`
+
+	_, err := db.GetDB().Exec(context.Background(), query, e.ID)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+}

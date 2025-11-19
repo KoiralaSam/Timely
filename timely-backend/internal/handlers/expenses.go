@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"net/http"
+	"strconv"
 
 	"github.com/KoiralaSam/Timely/timely-backend/internal/models"
 	"github.com/gin-gonic/gin"
@@ -45,4 +46,35 @@ func GetExpenses(ctx *gin.Context) {
 	}
 
 	ctx.JSON(http.StatusOK, gin.H{"message": "expenses fetched successfully", "expenses": expenses})
+}
+
+func DeleteExpense(ctx *gin.Context) {
+	id, err := strconv.ParseInt(ctx.Param("id"), 10, 64)
+
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"message": "could not parse id"})
+		return
+	}
+
+	expense, err := models.GetExpensesByID(id)
+
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{"message": "could not get expense"})
+		return
+	}
+
+	if expense.UserID != ctx.GetString("userId") {
+		ctx.JSON(http.StatusUnauthorized, gin.H{"message": "you are not authorized to delete this expense"})
+		return
+	}
+
+	err = expense.Delete()
+
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{"message": "could not delete expense"})
+		return
+	}
+
+	ctx.JSON(http.StatusOK, gin.H{"message": "expense deleted successfully", "id": id})
+
 }

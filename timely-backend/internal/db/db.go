@@ -55,7 +55,7 @@ func CreateTables(ctx context.Context) error {
 		return err
 	}
 
-	if count == 4 {
+	if count == 5 {
 		fmt.Println("All tables already exist, skipping initialization")
 		return nil
 	}
@@ -104,6 +104,17 @@ func CreateTables(ctx context.Context) error {
 			amount DECIMAL(10,2) NOT NULL,
 			description TEXT NULL,
 			date DATE NOT NULL,
+			created_at TIMESTAMPTZ DEFAULT NOW(),
+			updated_at TIMESTAMPTZ DEFAULT NOW()
+		)`,
+		`CREATE TABLE IF NOT EXISTS plaid_items
+		(
+			id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+			user_id UUID REFERENCES users(id) ON DELETE CASCADE NOT NULL,
+			access_token TEXT NOT NULL,
+			item_id TEXT NOT NULL,
+			institution_name TEXT NOT NULL,
+			institution_id TEXT NOT NULL,
 			created_at TIMESTAMPTZ DEFAULT NOW(),
 			updated_at TIMESTAMPTZ DEFAULT NOW()
 		)`,

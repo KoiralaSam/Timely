@@ -19,5 +19,7 @@ func RegisterRoutes(server *gin.Engine) {
 	authenticated.GET("/clock/sessions", handlers.GetClockSessions)
 	authenticated.POST("/expense/add", handlers.CreateExpense)
 	authenticated.GET("/expense/list", handlers.GetExpenses)
-
+	authenticated.DELETE("/expense/:id", handlers.DeleteExpense)
+	authenticated.POST("/plaid/link-token", handlers.CreateLinkToken)
+	authenticated.POST("/plaid/exchange-token", handlers.ExchangeToken)
 }
