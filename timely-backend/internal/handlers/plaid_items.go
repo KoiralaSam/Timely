@@ -174,3 +174,19 @@ func ExchangeToken(ctx *gin.Context) {
 		"plaid_item": plaidItem,
 	})
 }
+
+func GetPlaidItems(ctx *gin.Context) {
+	userId := ctx.GetString("userId")
+	if userId == "" {
+		ctx.JSON(http.StatusUnauthorized, gin.H{"message": "user is not authorized"})
+		return
+	}
+
+	plaidItems, err := models.GetPlaidItemsByUserID(userId)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{"message": "could not get plaid items", "error": err.Error()})
+		return
+	}
+
+	ctx.JSON(http.StatusOK, gin.H{"message": "plaid items fetched successfully", "plaid_items": plaidItems})
+}

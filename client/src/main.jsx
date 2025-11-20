@@ -5,13 +5,16 @@ import App from "./App.jsx";
 import { UserProvider } from "./contexts/userContext.jsx";
 import { TimeProvider } from "./contexts/timeContext.jsx";
 import { ExpenseProvider } from "./contexts/expenseContext.jsx";
+import { AccountProvider } from "./contexts/accountContext.jsx";
 
 createRoot(document.getElementById("root")).render(
   <BrowserRouter>
     <UserProvider>
       <TimeProvider>
         <ExpenseProvider>
-          <App />
+          <AccountProvider>
+            <App />
+          </AccountProvider>
         </ExpenseProvider>
       </TimeProvider>
     </UserProvider>

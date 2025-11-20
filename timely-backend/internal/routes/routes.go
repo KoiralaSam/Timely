@@ -22,4 +22,5 @@ func RegisterRoutes(server *gin.Engine) {
 	authenticated.DELETE("/expense/:id", handlers.DeleteExpense)
 	authenticated.POST("/plaid/link-token", handlers.CreateLinkToken)
 	authenticated.POST("/plaid/exchange-token", handlers.ExchangeToken)
+	authenticated.GET("/plaid/items", handlers.GetPlaidItems)
 }
