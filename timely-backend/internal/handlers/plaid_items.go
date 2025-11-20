@@ -73,9 +73,10 @@ func ExchangeToken(ctx *gin.Context) {
 	}
 
 	var requestBody struct {
-		PublicToken     string `json:"public_token"`
-		InstitutionID   string `json:"institution_id"`
-		InstitutionName string `json:"institution_name"`
+		PublicToken     string                `json:"public_token"`
+		InstitutionID   string                `json:"institution_id"`
+		InstitutionName string                `json:"institution_name"`
+		Accounts        []models.PlaidAccount `json:"accounts"`
 	}
 
 	err := ctx.ShouldBindJSON(&requestBody)
@@ -95,8 +96,29 @@ func ExchangeToken(ctx *gin.Context) {
 		return
 	}
 
-	fmt.Println("Received public_token:", public_token)
-	fmt.Println("User ID:", userId)
+	fmt.Println("Request body:", requestBody)
+
+	var accountIDs []string
+	for _, account := range requestBody.Accounts {
+		if account.ID != "" {
+			accountIDs = append(accountIDs, account.ID)
+		}
+	}
+
+	// Check if any account IDs already exist
+	exists, err := models.CheckAccountIDsExist(userId, accountIDs)
+	if err != nil {
+		fmt.Println("Error checking account IDs:", err.Error())
+		ctx.JSON(http.StatusInternalServerError, gin.H{"message": "could not check for duplicate accounts", "error": err.Error()})
+		return
+	}
+
+	if exists {
+		ctx.JSON(http.StatusConflict, gin.H{
+			"message": "Account already linked",
+		})
+		return
+	}
 
 	payload := map[string]any{
 
@@ -161,6 +183,7 @@ func ExchangeToken(ctx *gin.Context) {
 		ItemID:          itemID,
 		InstitutionID:   requestBody.InstitutionID,
 		InstitutionName: requestBody.InstitutionName,
+		Accounts:        requestBody.Accounts,
 	}
 
 	err = plaidItem.Save()
@@ -169,9 +192,21 @@ func ExchangeToken(ctx *gin.Context) {
 		return
 	}
 
+	// Convert to PlaidItemResponse (without access_token) for frontend
+	plaidItemResponse := models.PlaidItemResponse{
+		ID:              plaidItem.ID,
+		UserID:          plaidItem.UserID,
+		ItemID:          plaidItem.ItemID,
+		InstitutionName: plaidItem.InstitutionName,
+		InstitutionID:   plaidItem.InstitutionID,
+		Accounts:        plaidItem.Accounts,
+		CreatedAt:       plaidItem.CreatedAt,
+		UpdatedAt:       plaidItem.UpdatedAt,
+	}
+
 	ctx.JSON(http.StatusOK, gin.H{
 		"message":    "bank account linked successfully",
-		"plaid_item": plaidItem,
+		"plaid_item": plaidItemResponse,
 	})
 }
 
@@ -185,6 +220,7 @@ func GetPlaidItems(ctx *gin.Context) {
 	plaidItems, err := models.GetPlaidItemsByUserID(userId)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"message": "could not get plaid items", "error": err.Error()})
+		fmt.Println("Error getting plaid items:", err.Error())
 		return
 	}
 

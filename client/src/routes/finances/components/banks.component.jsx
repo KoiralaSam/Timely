@@ -60,6 +60,7 @@ const Banks = () => {
         },
       });
       const data = await response.json();
+      console.log(data);
 
       if (response.ok && data.link_token) {
         setLinkToken(data.link_token);
@@ -101,6 +102,7 @@ const Banks = () => {
               public_token,
               institution_id: metadata?.institution?.institution_id,
               institution_name: metadata?.institution?.name,
+              accounts: metadata?.accounts || [],
             },
             {
               headers: {
@@ -109,7 +111,6 @@ const Banks = () => {
               },
             }
           );
-
           if (response.status === 200) {
             setLinkSuccess(true);
             // Add new account to context

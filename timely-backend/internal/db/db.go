@@ -115,6 +115,7 @@ func CreateTables(ctx context.Context) error {
 			item_id TEXT NOT NULL,
 			institution_name TEXT NOT NULL,
 			institution_id TEXT NOT NULL,
+			accounts JSONB,
 			created_at TIMESTAMPTZ DEFAULT NOW(),
 			updated_at TIMESTAMPTZ DEFAULT NOW()
 		)`,
@@ -130,6 +131,13 @@ func CreateTables(ctx context.Context) error {
 	err = exec.Commit(ctx)
 	if err != nil {
 		return fmt.Errorf("error committing tables: %v", err)
+	}
+
+	// Add accounts column to plaid_items if it doesn't exist (migration)
+	_, err = Pool.Exec(ctx, `ALTER TABLE plaid_items ADD COLUMN IF NOT EXISTS accounts JSONB`)
+	if err != nil {
+		// Log but don't fail - column might already exist
+		fmt.Printf("Note: Could not add accounts column (may already exist): %v\n", err)
 	}
 
 	fmt.Println("Tables created successfully")
